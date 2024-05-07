@@ -2,10 +2,9 @@
 
 from typing import Any
 
-from sqlalchemy import Delete
+from sqlalchemy import Delete, Executable
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.selectable import TypedReturnsRows
 from typing_extensions import Sequence
 
 from apps.common.common_types import ModelType
@@ -17,7 +16,7 @@ class StatementExecutor:
     async def execute_return_statement(
         self,
         session: AsyncSession,
-        statement: TypedReturnsRows[Any],
+        statement: Executable,
         commit: bool = False,
         many: bool = False,
     ) -> ModelType | Sequence[ModelType] | None:
