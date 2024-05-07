@@ -47,12 +47,13 @@ def create_refresh_token(subject: Any, expires_delta: int = 0) -> str:
     )
 
 
-def verify_user(user: Optional[ModelType]) -> None:
+def verify_user(user: Optional[ModelType]) -> ModelType:
     """Check whether user is not none, and if it is - raise error."""
     if not user:
         raise BackendError(
             message='Login or password is invalid. Please, try again.',
         )
+    return user
 
 
 def verify_password(user: ModelType, password: str) -> None:
