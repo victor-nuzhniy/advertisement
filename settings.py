@@ -3,7 +3,7 @@
 import logging
 from functools import lru_cache
 
-from pydantic import Extra, Field, PostgresDsn, field_validator
+from pydantic import Extra, Field, field_validator
 from pydantic_core.core_schema import ValidationInfo
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import URL
@@ -40,8 +40,8 @@ class MainSettings(BaseSettings):
     POSTGRES_HOST: str = Field(default='127.0.0.1')
     POSTGRES_PASSWORD: str = Field(default='postgres')
     POSTGRES_PORT: int = Field(default=5432)
-    POSTGRES_DSN: PostgresDsn | None = Field(default=None)
-    POSTGRES_DSN_ASYNC: PostgresDsn | None = Field(default=None)
+    POSTGRES_DSN: URL | str = Field(default='')
+    POSTGRES_DSN_ASYNC: URL | str = Field(default='')
 
     # BACK-END SETTINGS
     DEBUG: bool = Field(default=False)
@@ -76,14 +76,14 @@ class MainSettings(BaseSettings):
     @classmethod
     def validate_database_url(
         cls,
-        url_value: str | int | None,
+        url_value: str,
         model_info: ValidationInfo,
-    ) -> URL | str | int:
+    ) -> URL | str:
         """Validate db sync and async urls."""
         async_dsn: bool = True
         if model_info.field_name == 'POSTGRES_DSN':
             async_dsn = False
-        if url_value is None:
+        if not url_value:
             return _build_db_dsn(values_dict=model_info.data, async_dsn=async_dsn)
         return url_value
 
