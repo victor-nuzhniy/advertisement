@@ -1,10 +1,7 @@
 """Project Base SQLAlchemy statements."""
 
-from typing import Any
-
-from sqlalchemy import Delete, Select, and_, delete, select, update
+from sqlalchemy import Executable, and_, delete, select, update
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.sql.selectable import ExecutableReturnsRows
 from typing_extensions import Optional, Type, Union
 
 from apps.common.common_types import ModelType, SchemaType
@@ -22,7 +19,7 @@ class BaseCRUDStatements:
         *,
         schema: Optional[SchemaType] = None,
         obj_data: Optional[dict] = None,
-    ) -> tuple[ExecutableReturnsRows]:
+    ) -> Executable:
         """Create statement for creating and returning model."""
         obj_data = obj_data if obj_data else {}
         obj_in_data = schema.model_dump(exclude_unset=True) if schema else {}
@@ -32,13 +29,13 @@ class BaseCRUDStatements:
         return (
             select(self.model)
             .from_statement(insert_statement)
-            .execution_options(populate_existing=True),
+            .execution_options(populate_existing=True)
         )
 
     def create_many_statement(
         self,
         schemas: list[SchemaType],
-    ) -> tuple[ExecutableReturnsRows]:
+    ) -> Executable:
         """Create statement for creating and returning models with given args."""
         insert_statement = (
             insert(self.model)
@@ -50,7 +47,7 @@ class BaseCRUDStatements:
         return (
             select(self.model)
             .from_statement(insert_statement)
-            .execution_options(populate_existing=True),
+            .execution_options(populate_existing=True)
         )
 
     def read_statement(
@@ -58,7 +55,7 @@ class BaseCRUDStatements:
         *,
         schema: Optional[SchemaType] = None,
         obj_data: Optional[dict] = None,
-    ) -> Select[Any]:
+    ) -> Executable:
         """Create statement for model reading."""
         obj_data = obj_data if obj_data else {}
         obj_in_data = schema.model_dump(exclude_unset=True) if schema else {}
@@ -72,7 +69,7 @@ class BaseCRUDStatements:
         *,
         schema: Union[SchemaType, dict, None] = None,
         where_data: Optional[dict] = None,
-    ) -> tuple[ExecutableReturnsRows]:
+    ) -> Executable:
         """Create statement for updating and returning model instance."""
         if isinstance(schema, dict):
             schema_values = schema
@@ -94,7 +91,7 @@ class BaseCRUDStatements:
         return (
             select(self.model)
             .from_statement(statement=update_statement)
-            .execution_options(populate_existing=True),
+            .execution_options(populate_existing=True)
         )
 
     def delete_statement(
@@ -102,7 +99,7 @@ class BaseCRUDStatements:
         *,
         schema: Optional[SchemaType] = None,
         obj_data: Optional[dict] = None,
-    ) -> Delete:
+    ) -> Executable:
         """Create statement for deleting model."""
         obj_data = obj_data if obj_data else {}
         schema_dict = schema.model_dump(exclude_unset=True) if schema else {}
@@ -115,7 +112,7 @@ class BaseCRUDStatements:
         self,
         *,
         filters: Optional[dict] = None,
-    ) -> Select[tuple[Any]] | Select[Any]:
+    ) -> Executable:
         """Create statement for read models list."""
         select_statement = select(self.model)
         if filters:
