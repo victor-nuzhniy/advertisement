@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from sqlalchemy import Delete, Executable
+from sqlalchemy import Executable
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing_extensions import Sequence
@@ -31,7 +31,7 @@ class StatementExecutor:
     async def execute_delete_statement(
         self,
         session: AsyncSession,
-        statement: Delete,
+        statement: Executable,
     ) -> None:
         """Execute delete statement."""
         await session.execute(statement)
