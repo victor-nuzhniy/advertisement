@@ -1,6 +1,5 @@
 """User apps schemas."""
 
-from datetime import datetime
 from re import fullmatch
 
 from pydantic import Field, computed_field, field_validator, model_validator
@@ -130,5 +129,3 @@ class CreateAdminUserIn(CreateUserIn):
 
 class AdminUserOut(UserOut):
     """User out schema for admin interface."""
-
-    last_request_at: Annotated[datetime, Field(description='User last request at')]
