@@ -1,9 +1,9 @@
 version: '3.7'
 
 services:
-  postgres_experimental:
+  postgres_adv:
     image: 'postgres:16-alpine3.19'
-    container_name: 'postgres_experimental'
+    container_name: 'postgres_adv'
     env_file:
       - .env
     volumes:
