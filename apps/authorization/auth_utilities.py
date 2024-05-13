@@ -53,6 +53,8 @@ def verify_user(user: Optional[ModelType]) -> ModelType:
         raise BackendError(
             message='Login or password is invalid. Please, try again.',
         )
+    if not user.is_active:
+        raise BackendError(message='Your account is not activated.')
     return user
 
 
