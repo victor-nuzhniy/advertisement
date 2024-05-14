@@ -30,7 +30,12 @@ def upgrade() -> None:
         sa.Column("email", sa.String(length=100), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("is_admin", sa.Boolean(), nullable=False),
-        sa.Column("created_at", sa.TIMESTAMP(timezone=True)),
+        sa.Column(
+            "created_at",
+            sa.TIMESTAMP(timezone=True),
+            server_default=sa.text("CURRENT_TIMESTAMP"),
+            nullable=False,
+        ),
         sa.PrimaryKeyConstraint("id", name=op.f("user_pkey")),
         sa.UniqueConstraint("email", name=op.f("user_email_key")),
         sa.UniqueConstraint("username", name=op.f("user_username_key")),

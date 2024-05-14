@@ -34,7 +34,12 @@ def upgrade() -> None:
         sa.Column("salon", sa.String(length=50), nullable=True),
         sa.Column("seller", sa.String(length=255), nullable=False),
         sa.Column("adv_date", sa.Date(), nullable=True),
-        sa.Column("created_at", sa.TIMESTAMP(timezone=True), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.TIMESTAMP(timezone=True),
+            server_default=sa.text("CURRENT_TIMESTAMP"),
+            nullable=False,
+        ),
         sa.PrimaryKeyConstraint("id", name=op.f("advertisement_pkey")),
     )
 
