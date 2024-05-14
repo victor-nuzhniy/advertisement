@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from apps.advertisements.routers import adv_router
+from apps.authorization.routers import authorization_router
 from apps.common.exceptions import BackendError
 from apps.common.exceptions_handlers import (
     backend_error_handler,
@@ -43,3 +44,4 @@ app.add_exception_handler(
 
 app.include_router(users_router)
 app.include_router(adv_router)
+app.include_router(authorization_router)
