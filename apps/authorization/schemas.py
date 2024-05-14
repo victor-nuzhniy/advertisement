@@ -32,15 +32,7 @@ class UserOut(BaseOutSchema):
         bool,
         Field(description='Current user "is_admin" status', examples=['True']),
     ]
-    last_visit_at: Annotated[
-        datetime,
-        Field(description='Current user last visit date'),
-    ]
     created_at: Annotated[datetime, Field(description='Current user creation date')]
-    updated_at: Annotated[
-        datetime,
-        Field(description='Current user last updation date'),
-    ]
 
 
 class UserIn(TokenPayload):
