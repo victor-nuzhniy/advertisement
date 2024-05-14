@@ -12,7 +12,10 @@ from settings import Settings
 
 config = context.config
 
-config.set_main_option('sqlalchemy.url', str(Settings.POSTGRES_DSN))
+config.set_main_option(
+    'sqlalchemy.url',
+    Settings.POSTGRES_DSN.render_as_string(hide_password=False),  # type: ignore
+)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
