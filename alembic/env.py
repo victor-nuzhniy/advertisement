@@ -6,6 +6,7 @@ from sqlalchemy import engine_from_config, pool
 from sqlalchemy_utils import create_database, database_exists
 
 from alembic import context
+from apps.advertisements.models import Base as AdvertisementBase  # type: ignore
 from apps.common.db import Base, engine
 from apps.user.models import Base as UserBase  # type: ignore
 from settings import Settings
