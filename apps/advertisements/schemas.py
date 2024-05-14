@@ -2,7 +2,7 @@
 
 from datetime import date, datetime
 
-from pydantic import Field, computed_field
+from pydantic import Field, computed_field, field_validator
 from typing_extensions import Annotated
 
 from apps.common.schemas import BaseInSchema, BaseOutSchema
@@ -117,3 +117,24 @@ class AdvOut(BaseOutSchema):
     ]
     adv_date: Annotated[date, Field(description='Advertisement created at in date')]
     created_at: Annotated[datetime, Field(description='Field creation datetime')]
+
+
+class AdvPeriodQuerySchema(BaseInSchema):
+    """Schema for period query string."""
+
+    begin: Annotated[
+        str | None,
+        Field(examples=['12-10-2023'], description='Start period date.'),
+    ]
+    end: Annotated[
+        str | None,
+        Field(examples=['12-11-2023'], description='End period date.'),
+    ]
+
+    @field_validator('begin', 'end')
+    @classmethod
+    def validate_data(cls, date_value: str | None) -> date | None:
+        """Validate and parse date_value."""
+        if date_value is None:
+            return date_value
+        return datetime.strptime(date_value, '%d-%m-%Y').date()
