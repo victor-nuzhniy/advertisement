@@ -1,8 +1,7 @@
 """Advertisement apps models."""
 
-from sqlalchemy import Column, Date, Integer, String, func
+from sqlalchemy import TIMESTAMP, Column, Date, Integer, String, func
 
-from apps.common.common_utilities import AwareDateTime
 from apps.common.db import Base
 
 
@@ -22,7 +21,7 @@ class Advertisement(Base):
     salon = Column(String(50))
     seller = Column(String(255), nullable=False)
     adv_date = Column(Date, default=func.now(), nullable=True)
-    created_at = Column(AwareDateTime, default=func.now(), nullable=False)
+    created_at = Column(TIMESTAMP, default=func.now(), nullable=False)
 
     def __repr__(self) -> str:
         """Represent class instance."""
