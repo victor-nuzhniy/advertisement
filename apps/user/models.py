@@ -1,7 +1,8 @@
 """Models for user apps."""
 
-from sqlalchemy import TIMESTAMP, Boolean, Column, Integer, String, func
+from sqlalchemy import Boolean, Column, Integer, String, func
 
+from apps.common.common_utilities import AwareDateTime
 from apps.common.db import Base
 
 
@@ -16,7 +17,7 @@ class User(Base):
     email = Column(String(100), nullable=False, unique=True)
     is_active = Column(Boolean, default=False, nullable=False)
     is_admin = Column(Boolean, default=False, nullable=False)
-    created_at = Column(TIMESTAMP, default=func.now())
+    created_at = Column(AwareDateTime, default=func.now())
 
     def __repr__(self) -> str:
         """Represent class instance."""
