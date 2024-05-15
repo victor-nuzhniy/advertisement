@@ -18,9 +18,13 @@ class AdvStatements(BaseCRUDStatements):
         """Get period advertisement list."""
         select_statement = select(self.model)
         if period.begin:
-            select_statement.filter(self.model.adv_date >= period.begin)
+            select_statement = select_statement.filter(
+                self.model.adv_date >= period.begin,
+            )
         if period.end:
-            select_statement.filter(self.model.adv_date <= period.end)
+            select_statement = select_statement.filter(
+                self.model.adv_date <= period.end,
+            )
         return select_statement.execution_options(populate_existing=True)
 
 
