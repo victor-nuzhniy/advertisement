@@ -47,6 +47,9 @@ repos:
         - mypy==1.10.0
         - python-dateutil
         - types-python-dateutil
+        - celery
+        - redis
+        - scrapy
       name: mypy
       entry: mypy
       language: python
