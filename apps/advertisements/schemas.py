@@ -76,6 +76,12 @@ class CreateAdvIn(BaseInSchema):
         return date_object
 
 
+class AdvInList(BaseInSchema):
+    """Advertisement schema list."""
+
+    item_list: list[CreateAdvIn]
+
+
 class AdvOut(BaseOutSchema):
     """Advertisement out schema."""
 
