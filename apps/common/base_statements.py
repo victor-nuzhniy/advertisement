@@ -34,7 +34,7 @@ class BaseCRUDStatements:
 
     def create_many_statement(
         self,
-        schemas: list[SchemaType],
+        schemas: SchemaType,  # type: ignore
     ) -> Executable:
         """Create statement for creating and returning models with given args."""
         insert_statement = (
