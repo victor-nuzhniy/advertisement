@@ -139,3 +139,26 @@ class AdvPeriodQuerySchema(BaseInSchema):
         if date_value is None:
             return date_value
         return datetime.strptime(date_value, '%Y-%m-%d').date()
+
+
+class AdvNameModelQuerySchema(BaseInSchema):
+    """Schema for name and/or model statistic."""
+
+    name: Annotated[
+        str | None,
+        Field(max_length=100, examples=['Honda'], description='Car name.'),
+    ]
+    model: Annotated[
+        str | None,
+        Field(max_length=100, examples=['CR-V'], description='Car model.'),
+    ]
+
+
+class AdvStatOutSchema(BaseOutSchema):
+    """Schema for statistical info concerning min/max price and number/period."""
+
+    min_price: int
+    max_price: int
+    num_day: int
+    num_week: int
+    num_month: int
