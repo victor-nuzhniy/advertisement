@@ -7,7 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.advertisements.handlers import adv_handlers
 from apps.advertisements.models import Advertisement
-from apps.advertisements.schemas import AdvOut, AdvPeriodQuerySchema, CreateAdvIn
+from apps.advertisements.schemas import (
+    AdvNameModelQuerySchema,
+    AdvOut,
+    AdvPeriodQuerySchema,
+    AdvStatOutSchema,
+    CreateAdvIn,
+)
 from apps.common.base_routers import BaseRouterInitializer
 from apps.common.dependencies import get_async_session
 from apps.common.schemas import JSENDFailOutSchema, JSENDOutSchema
@@ -52,6 +58,38 @@ async def get_advertisement_by_period(
                     begin=period.begin,
                 ),
                 ' and end - {end} period'.format(end=period.end),
+            ),
+        ),
+    }
+
+
+@adv_router.get(
+    '/list/advertisement/stat/',
+    name='adv_stat',
+    response_model=JSENDOutSchema[AdvStatOutSchema],
+    summary='Get statistic information of given model.',
+    responses={
+        200: {'description': 'Successfully get advertisement stat info'},
+        422: {'model': JSENDFailOutSchema, 'description': 'ValidationError'},
+    },
+    tags=['Advertisement application'],
+)
+async def get_advertisement_stat(
+    request: Request,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+    car_info: Annotated[AdvNameModelQuerySchema, Depends()],
+) -> dict:
+    """Get advertisements stat info concerning max/min price and number/period."""
+    return {
+        'data': await adv_handlers.get_name_model_stat(request, session, car_info),
+        'message': ''.join(
+            (
+                'Get stat info for advertisement with car ',
+                'name: {name} and model: {model}'.format(
+                    name=car_info.name,
+                    model=car_info.model,
+                ),
             ),
         ),
     }
