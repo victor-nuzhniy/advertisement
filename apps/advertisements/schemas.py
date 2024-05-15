@@ -61,7 +61,7 @@ class CreateAdvIn(BaseInSchema):
         str,
         Field(
             exclude=True,
-            examples=['22-10-2024'],
+            examples=['2024-10-15'],
             description='Advertisement date creation in str',
         ),
     ]
@@ -70,7 +70,7 @@ class CreateAdvIn(BaseInSchema):
     def adv_date(self) -> date | None:
         """Create date from str."""
         try:
-            date_object = datetime.strptime(self.created, '%d-%m-%Y').date()
+            date_object = datetime.strptime(self.created, '%Y-%m-%d').date()
         except ValueError:
             date_object = None
         return date_object
@@ -79,6 +79,7 @@ class CreateAdvIn(BaseInSchema):
 class AdvOut(BaseOutSchema):
     """Advertisement out schema."""
 
+    id: int
     url: Annotated[
         str,
         Field(examples=['https://heelo.org'], description='Advertisements url'),
@@ -124,11 +125,11 @@ class AdvPeriodQuerySchema(BaseInSchema):
 
     begin: Annotated[
         str | None,
-        Field(examples=['12-10-2023'], description='Start period date.'),
+        Field(examples=['2023-10-12'], description='Start period date.'),
     ]
     end: Annotated[
         str | None,
-        Field(examples=['12-11-2023'], description='End period date.'),
+        Field(examples=['2023-11-12'], description='End period date.'),
     ]
 
     @field_validator('begin', 'end')
@@ -137,4 +138,4 @@ class AdvPeriodQuerySchema(BaseInSchema):
         """Validate and parse date_value."""
         if date_value is None:
             return date_value
-        return datetime.strptime(date_value, '%d-%m-%Y').date()
+        return datetime.strptime(date_value, '%Y-%m-%d').date()
