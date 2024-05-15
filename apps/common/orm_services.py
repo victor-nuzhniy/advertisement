@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from sqlalchemy import Executable
+from sqlalchemy import Executable, Row
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing_extensions import Sequence
@@ -36,6 +36,15 @@ class StatementExecutor:
         """Execute delete statement."""
         await session.execute(statement)
         await session.commit()
+
+    async def execute_fetchmany_statement(
+        self,
+        session: AsyncSession,
+        statement: Executable,
+    ) -> Sequence[Row[Any]]:
+        """Execute fetchmany statement."""
+        alchemy_result: Result[Any] = await session.execute(statement)
+        return alchemy_result.fetchmany()
 
 
 statement_executor = StatementExecutor()
