@@ -46,6 +46,7 @@ repos:
         - bcrypt==4.1.3
         - mypy==1.10.0
         - python-dateutil
+        - types-python-dateutil
       name: mypy
       entry: mypy
       language: python
