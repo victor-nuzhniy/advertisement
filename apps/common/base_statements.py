@@ -40,7 +40,10 @@ class BaseCRUDStatements:
         insert_statement = (
             insert(self.model)
             .values(
-                [schema.model_dump(exclude_unset=True) for schema in schemas],
+                [
+                    schema.model_dump(exclude_unset=True)
+                    for schema in schemas.item_list  # type: ignore
+                ],
             )
             .returning(self.model)
         )
