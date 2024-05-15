@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from apps.advertisements.handlers import adv_handlers
 from apps.advertisements.models import Advertisement
 from apps.advertisements.schemas import (
+    AdvInList,
     AdvNameModelQuerySchema,
     AdvOut,
     AdvPeriodQuerySchema,
@@ -17,7 +18,7 @@ from apps.advertisements.schemas import (
 from apps.common.base_routers import BaseRouterInitializer
 from apps.common.dependencies import get_async_session
 from apps.common.schemas import JSENDFailOutSchema, JSENDOutSchema
-from apps.common.user_dependencies import get_current_user
+from apps.common.user_dependencies import get_current_admin_user, get_current_user
 from apps.user.models import User
 
 adv_router = APIRouter()
@@ -92,4 +93,29 @@ async def get_advertisement_stat(
                 ),
             ),
         ),
+    }
+
+
+@adv_router.post(
+    '/admin/list/advertisement/',
+    name='bulk_create',
+    response_model=JSENDOutSchema,
+    summary='Create many advertisement.',
+    responses={
+        200: {'description': 'Successfully created many advertisement.'},
+        422: {'model': JSENDFailOutSchema, 'description': 'ValidationError'},
+    },
+    tags=['Advertisements application'],
+)
+async def bulk_create_adv(
+    request: Request,
+    user: Annotated[User, Depends(get_current_admin_user)],
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+    advs: Annotated[AdvInList, Depends()],
+) -> dict:
+    """Create many advertisements."""
+    await adv_handlers.bulk_create_adv(request, session, advs)
+    return {
+        'data': None,
+        'message': 'Successfully created advertisements.',
     }
