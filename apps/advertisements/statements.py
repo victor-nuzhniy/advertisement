@@ -1,6 +1,6 @@
 """Advertisement apps statements."""
 
-from sqlalchemy import Executable, select
+from sqlalchemy import Executable, func, select
 
 from apps.advertisements.models import Advertisement
 from apps.advertisements.schemas import AdvNameModelQuerySchema, AdvPeriodQuerySchema
@@ -38,9 +38,13 @@ class AdvStatements(BaseCRUDStatements):
             self.model.adv_date,
         )
         if car_info.name:
-            statement = statement.where(self.model.name == car_info.name)
+            statement = statement.where(
+                func.lower(self.model.name) == car_info.name.lower(),
+            )
         if car_info.model:
-            statement = statement.where(self.model.model == car_info.model)
+            statement = statement.where(
+                func.lower(self.model.model) == car_info.model.lower(),
+            )
         return statement.execution_options(populate_existing=True)
 
 
