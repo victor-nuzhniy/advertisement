@@ -71,7 +71,9 @@ add_func = AdditionalFunctionality()
 class SpiderItem(Item):
     """Define the fields for your item here like: name = scrapy.Field()."""
 
-    url = Field()
+    url = Field(
+        output_processor=TakeFirst(),
+    )
     name = Field(
         input_processor=MapCompose(add_func.check_none, str.strip, add_func.get_name),
         output_processor=TakeFirst(),
