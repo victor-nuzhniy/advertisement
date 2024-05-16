@@ -1,5 +1,6 @@
 """Advertisement apps handlers."""
 
+from datetime import datetime
 from typing import Any, Sequence
 
 from fastapi import Request
@@ -79,6 +80,15 @@ class AdvHandlers:
         """Create single advertisement."""
         statement: Executable = adv_statements.create_statement(schema=adv)
         executor.sync_execute_return_statement(session, statement, commit=True)
+
+    def delete_old_adv(
+        self,
+        session: Session,
+        old_date: datetime,
+    ) -> None:
+        """Delete advertisements, older than argument."""
+        statement: Executable = adv_statements.delete_old_statement(old_date=old_date)
+        executor.sync_execute_delete_statement(session, statement)
 
 
 adv_handlers = AdvHandlers()
