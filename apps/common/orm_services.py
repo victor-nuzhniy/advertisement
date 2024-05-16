@@ -5,6 +5,7 @@ from typing import Any
 from sqlalchemy import Executable, Row
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from typing_extensions import Sequence
 
 from apps.common.common_types import ModelType
@@ -24,6 +25,21 @@ class StatementExecutor:
         alchemy_result: Result[Any] = await session.execute(statement)
         if commit:
             await session.commit()
+        if many:
+            return alchemy_result.scalars().all()
+        return alchemy_result.scalar_one_or_none()
+
+    def sync_execute_return_statement(
+        self,
+        session: Session,
+        statement: Executable,
+        commit: bool = False,
+        many: bool = False,
+    ) -> ModelType | Sequence[ModelType] | None:
+        """Execute statement with returning data."""
+        alchemy_result: Result[Any] = session.execute(statement)
+        if commit:
+            session.commit()
         if many:
             return alchemy_result.scalars().all()
         return alchemy_result.scalar_one_or_none()
