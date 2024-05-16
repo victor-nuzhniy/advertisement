@@ -93,7 +93,3 @@ class UrlRedisStorage(RedisStorage):
 
 
 url_redis_storage = UrlRedisStorage()
-
-
-if __name__ == '__main__':
-    remove_old_adv()
