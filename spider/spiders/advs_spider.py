@@ -8,6 +8,7 @@ from itemloaders import ItemLoader
 from scrapy import Spider
 from scrapy.http import Response
 
+from settings import Settings
 from spider.items import AdvSpiderItem
 from spider.project_utilities.save_utilities import url_redis_storage
 
@@ -28,7 +29,7 @@ class AdvsSpider(Spider):
 
     def parse(self, response: Response, **kwargs: Any) -> Any:
         """Parse response."""
-        time.sleep(3)
+        time.sleep(Settings.SCRAP_TIMEOUT)
         spider_item = ItemLoader(item=AdvSpiderItem(), selector=response)
         spider_item.add_xpath('urls', './/a[@class="address"]/@href')
         spider_item.load_item()
@@ -39,5 +40,7 @@ class AdvsSpider(Spider):
         next_url = response.xpath(
             '//a[contains(@href, "{url}")]/@href'.format(url=next_url),
         ).get()
-        if next_url and self.page < 2:
+        if Settings.DEBUG and self.page < 3:
+            return None
+        if next_url:
             return response.follow(next_url)

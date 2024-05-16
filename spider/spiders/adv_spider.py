@@ -1,14 +1,16 @@
 """Advertisement spider."""
 
 import logging
+import time
 from typing import Any, Generator, Iterable
 
 from itemloaders import ItemLoader
 from scrapy import Request, Spider
 from scrapy.http import Response
 
+from settings import Settings
 from spider.items import SpiderItem
-from spider.project_utilities.save_utilities import save_adv_data
+from spider.project_utilities.save_utilities import save_adv_data, url_redis_storage
 
 logger = logging.getLogger(__name__)
 
@@ -20,11 +22,15 @@ class AdvSpider(Spider):
 
     def start_requests(self) -> Iterable[Request]:
         """Start requests functionality."""
-        urls = [
-            'https://auto.ria.com/uk/auto_skoda_kodiaq_36549938.html',
-        ]
+        urls = url_redis_storage.get_urls()
+        index = 0
         for url in urls:  # noqa
+            time.sleep(Settings.SCRAP_TIMEOUT)
+            index += 1
             yield Request(url=url, callback=self.parse)
+            if Settings.DEBUG and index > 10:
+                break
+        url_redis_storage.delete_data('urls')
 
     def parse(self, response: Response, **kwargs: Any) -> Generator[dict, None, None]:
         """Parse response."""
