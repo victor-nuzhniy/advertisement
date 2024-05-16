@@ -86,6 +86,9 @@ class MainSettings(BaseSettings):
     CELERY_BROKER_REDIS_URL: str = Field(default='')
     CELERY_RESULT_BACKEND: str = Field(default='')
 
+    # SCRAP TIMEOUT
+    SCRAP_TIMEOUT: int = Field(default=1)
+
     # LOGGING SETTINGS
     LOG_LEVEL: int = Field(default=logging.WARNING)
     LOG_USE_COLORS: bool = Field(default=False)
