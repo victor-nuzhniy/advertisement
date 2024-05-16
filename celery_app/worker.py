@@ -1,7 +1,5 @@
 """Celery worker."""
 
-from typing import Any
-
 from celery import Celery
 from celery.schedules import crontab
 
@@ -14,17 +12,18 @@ celery.conf.broker_url = Settings.CELERY_BROKER_REDIS_URL
 celery.conf.result_backend = Settings.CELERY_RESULT_BACKEND
 
 
-@celery.on_after_configure.connect
-def setup_periodic_tasks(sender, **kwargs: Any) -> None:  # type: ignore
-    """Set periodic tasks."""
-    sender.add_periodic_task(
-        crontab(hour=Settings.CLEAN_TIME),
-        clean_db.s(),
-    )
-    sender.add_periodic_task(
-        crontab(hour=Settings.SCRAP_TIME),
-        scrap.s(),
-    )
+celery.conf.beat_schedule = {
+    'clean_db': {
+        'task': 'clean_db',
+        'schedule': crontab(hour=Settings.CLEAN_TIME, minute='1'),
+    },
+}
+celery.conf.beat_schedule = {
+    'scrap': {
+        'task': 'scrap',
+        'schedule': crontab(hour=Settings.SCRAP_TIME, minute='1'),
+    },
+}
 
 
 @celery.task(name='scrap')
