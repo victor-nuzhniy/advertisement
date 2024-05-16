@@ -1,6 +1,8 @@
 """Advertisement apps statements."""
 
-from sqlalchemy import Executable, func, select
+from datetime import datetime
+
+from sqlalchemy import Executable, delete, func, select
 
 from apps.advertisements.models import Advertisement
 from apps.advertisements.schemas import AdvNameModelQuerySchema, AdvPeriodQuerySchema
@@ -46,6 +48,13 @@ class AdvStatements(BaseCRUDStatements):
                 func.lower(self.model.model) == car_info.model.lower(),
             )
         return statement.execution_options(populate_existing=True)
+
+    def delete_old_statement(
+        self,
+        old_date: datetime,
+    ) -> Executable:
+        """Create statement for deleting old advertisements."""
+        return delete(self.model).where(self.model.created_at <= old_date)
 
 
 adv_statements = AdvStatements(model=Advertisement)
