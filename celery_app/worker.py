@@ -15,13 +15,19 @@ celery.conf.result_backend = Settings.CELERY_RESULT_BACKEND
 celery.conf.beat_schedule = {
     'clean_db': {
         'task': 'clean_db',
-        'schedule': crontab(hour=Settings.CLEAN_TIME, minute='1'),
+        'schedule': crontab(
+            hour=Settings.CLEAN_TIME_HOUR,
+            minute=Settings.CLEAN_TIME_MINUTE,
+        ),
     },
 }
 celery.conf.beat_schedule = {
     'scrap': {
         'task': 'scrap',
-        'schedule': crontab(hour=Settings.SCRAP_TIME, minute='1'),
+        'schedule': crontab(
+            hour=Settings.SCRAP_TIME_HOUR,
+            minute=Settings.SCRAP_TIME_MINUTE,
+        ),
     },
 }
 
