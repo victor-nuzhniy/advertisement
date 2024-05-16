@@ -13,7 +13,7 @@ from spider.project_utilities.save_utilities import save_adv_data
 logger = logging.getLogger(__name__)
 
 
-class QuoteSpider(Spider):
+class AdvSpider(Spider):
     """Spider class."""
 
     name = 'adv_spider'
