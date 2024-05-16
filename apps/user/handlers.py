@@ -3,12 +3,13 @@
 from fastapi import Request
 from sqlalchemy import Executable
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from typing_extensions import Sequence
 
 from apps.common.common_utilities import checkers
 from apps.common.orm_services import statement_executor as executor
 from apps.user.models import User
-from apps.user.schemas import CreateUserIn, CreateUserOut
+from apps.user.schemas import CreateAdminUserIn, CreateUserIn, CreateUserOut
 from apps.user.statements import user_crud_statements
 
 
@@ -39,6 +40,19 @@ class UserHandlers:
         )
         checked_user: User = checkers.check_created_instance(created_user, 'User')
         return CreateUserOut.model_validate(checked_user)
+
+    def sync_create_admin_user(
+        self,
+        user: CreateAdminUserIn,
+        session: Session,
+    ) -> None:
+        """Create admin user."""
+        statement = user_crud_statements.create_statement(schema=user)
+        executor.sync_execute_return_statement(
+            session,
+            statement,
+            commit=True,
+        )
 
 
 user_handlers = UserHandlers()
