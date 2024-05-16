@@ -53,6 +53,15 @@ class StatementExecutor:
         await session.execute(statement)
         await session.commit()
 
+    def sync_execute_delete_statement(
+        self,
+        session: Session,
+        statement: Executable,
+    ) -> None:
+        """Execute delete statement."""
+        session.execute(statement)
+        session.commit()
+
     async def execute_fetchmany_statement(
         self,
         session: AsyncSession,
