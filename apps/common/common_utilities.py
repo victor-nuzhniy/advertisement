@@ -19,6 +19,7 @@ class AwareDateTime(TypeDecorator):
     """Results returned as aware datetimes, not naive ones."""
 
     impl = DATETIME
+    cache_ok = True
 
     @property
     def python_type(
