@@ -2,8 +2,11 @@
 
 from typing import Any, Generator, Iterable
 
+from itemloaders import ItemLoader
 from scrapy import Request, Spider
 from scrapy.http import Response
+
+from spider.items import SpiderItem
 
 
 class QuoteSpider(Spider):
@@ -21,96 +24,41 @@ class QuoteSpider(Spider):
 
     def parse(self, response: Response, **kwargs: Any) -> Generator[dict, None, None]:
         """Parse response."""
-        name, model = self.get_name_and_model(
-            response.xpath('.//h1[@class="head"]/text()').get(default='').strip(),
+        spider_item = ItemLoader(
+            item=SpiderItem(),
+            response=response,
+            selector=response,
         )
-        price = self.convert_str_num(
-            response.xpath('.//div[@class="price_value"]/strong/text()').get(
-                default='',
+        spider_item.add_value('url', response.url)
+        spider_item.add_xpath('name', './/h1[@class="head"]/text()')
+        spider_item.add_xpath('price', './/div[@class="price_value"]/strong/text()')
+        spider_item.add_xpath('model', './/h1[@class="head"]/text()')
+        spider_item.add_xpath(
+            'region',
+            ''.join(
+                (
+                    './/section[@id="userInfoBlock"]/ul[@class="checked-list ',
+                    'unstyle mb-15"]/li[@class="item"]/div[@class',
+                    '="item_inner"]/text()',
+                ),
             ),
         )
-        run = self.convert_str_num(
-            response.xpath('.//dd[@class="mhide"]/span[@class="argument"]/text()')
-            .get(default='')
-            .strip(),
+        spider_item.add_xpath(
+            'run',
+            './/dd[@class="mhide"]/span[@class="argument"]/text()',
         )
-        adv_date = self.convert_date(
-            response.xpath(
-                './/div[@class="size13 mt-5 mb-10 update-date"]/span/text()',
-            ).get(),
+        spider_item.add_xpath(
+            'color',
+            './/span[@class="car-color"]/following-sibling::text()',
         )
-        yield {
-            'url': response.url,
-            'name': name,
-            'price': price,
-            'model': model,
-            'region': response.xpath(
-                ''.join(
-                    (
-                        './/section[@id="userInfoBlock"]/ul[@class="checked-list ',
-                        'unstyle mb-15"]/li[@class="item"]/div[@class',
-                        '="item_inner"]/text()',
-                    ),
-                ),
-            )
-            .get(default='')
-            .strip(),
-            'run': run,
-            'color': response.xpath(
-                './/span[@class="car-color"]/following-sibling::text()',
-            )
-            .get(default='')
-            .strip(),
-            'salon': response.xpath(
-                './/div[@class="technical-info"]/dl[@class="unstyle"]/dd/text()',
-            )
-            .get(default='')
-            .strip(),
-            'seller': response.xpath('.//div[@class="seller_info_name bold"]/text()')
-            .get(default='')
-            .strip(),
-            'adv_date': adv_date,
-        }
-
-    def get_name_and_model(self, name_data: str) -> tuple:
-        """Get name and model from given data."""
-        data_list = name_data.split()
-        name, model = '', ''
-        if len(data_list) > 1:
-            name, model = data_list[0], data_list[1]
-        else:
-            name = data_list[0]
-        return name, model
-
-    def convert_str_num(self, price: str) -> int:
-        """Convert price string to int."""
-        cleaned_price = ''.join(filter(lambda el: el.isdigit(), price))
-        if cleaned_price:
-            return int(cleaned_price)
-        return 0
-
-    def convert_date(self, date_data: str) -> str:
-        """Convert date data for format %d-%m-%Y."""
-        month_dict = {
-            'січ': 1,
-            'лют': 2,
-            'бер': 3,
-            'кві': 4,
-            'тра': 5,
-            'чер': 6,
-            'лип': 7,
-            'сер': 8,
-            'вер': 9,
-            'жов': 10,
-            'лис': 11,
-            'гру': 12,
-        }
-        date_list = date_data.split()
-        if len(date_list) == 4 and len(date_list[2]) > 2:
-            month: int = month_dict.get(date_list[2][:3], 1)
-            return '{year}-{month:02d}-{day}'.format(
-                year=date_list[3],
-                month=month,
-                day=date_list[1],
-            )
-        return '2010-01-01'
+        spider_item.add_xpath(
+            'salon',
+            './/div[@class="technical-info"]/dl[@class="unstyle"]/dd/text()',
+        )
+        spider_item.add_xpath('seller', './/div[@class="seller_info_name bold"]/text()')
+        spider_item.add_xpath(
+            'adv_date',
+            './/div[@class="size13 mt-5 mb-10 update-date"]/span/text()',
+        )
+        spider_item.load_item()
+        yield spider_item.item.__dict__['_values']
