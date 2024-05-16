@@ -1,9 +1,11 @@
 """Utilities for saving date to db."""
 
 import json
+from datetime import datetime, timezone
 from typing import Any
 
 import redis
+from dateutil.relativedelta import relativedelta
 
 from apps.advertisements.handlers import adv_handlers
 from apps.advertisements.schemas import CreateAdvIn
@@ -23,6 +25,23 @@ def save_adv_data(adv_data: dict) -> str:
     message = 'Successfully saved data to db.'
     try:
         save_adv_data_to_db(adv_data)
+    except Exception as ex:
+        message = str(ex)
+    return message
+
+
+def remove_old_adv_from_db() -> None:
+    """Remove data older than yesterday."""
+    day_ago = datetime.now(timezone.utc) + relativedelta(days=-1)
+    session = next(get_session())
+    adv_handlers.delete_old_adv(session, day_ago)
+
+
+def remove_old_adv() -> str:
+    """Remove old advertisements with catching errors."""
+    message = 'Successfully removed advertisements, created earlier than 24 hours ago'
+    try:
+        remove_old_adv_from_db()
     except Exception as ex:
         message = str(ex)
     return message
@@ -67,3 +86,7 @@ class UrlRedisStorage(RedisStorage):
 
 
 url_redis_storage = UrlRedisStorage()
+
+
+if __name__ == '__main__':
+    remove_old_adv()
