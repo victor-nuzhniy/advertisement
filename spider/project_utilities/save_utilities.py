@@ -84,6 +84,13 @@ class UrlRedisStorage(RedisStorage):
             urls = url_list
         self.save_data('urls', urls)
 
+    def get_urls(self) -> list:
+        """Get urls from redis db."""
+        urls = self.get_data('urls')
+        if isinstance(urls, list):
+            return urls
+        return []
+
 
 url_redis_storage = UrlRedisStorage()
 
