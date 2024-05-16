@@ -1,5 +1,6 @@
 """Advertisement spider."""
 
+import logging
 from typing import Any, Generator, Iterable
 
 from itemloaders import ItemLoader
@@ -7,6 +8,9 @@ from scrapy import Request, Spider
 from scrapy.http import Response
 
 from spider.items import SpiderItem
+from spider.project_utilities.save_utilities import save_adv_data
+
+logger = logging.getLogger(__name__)
 
 
 class QuoteSpider(Spider):
@@ -17,7 +21,7 @@ class QuoteSpider(Spider):
     def start_requests(self) -> Iterable[Request]:
         """Start requests functionality."""
         urls = [
-            'https://auto.ria.com/uk/auto_honda_cr-v_36270838.html',
+            'https://auto.ria.com/uk/auto_skoda_kodiaq_36549938.html',
         ]
         for url in urls:  # noqa
             yield Request(url=url, callback=self.parse)
@@ -61,4 +65,5 @@ class QuoteSpider(Spider):
             './/div[@class="size13 mt-5 mb-10 update-date"]/span/text()',
         )
         spider_item.load_item()
+        logger.info(save_adv_data(spider_item.item.__dict__['_values']))
         yield spider_item.item.__dict__['_values']
