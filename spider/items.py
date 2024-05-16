@@ -114,3 +114,9 @@ class SpiderItem(Item):
         ),
         output_processor=TakeFirst(),
     )
+
+
+class AdvSpiderItem(Item):
+    """Define urls to scrap data."""
+
+    urls = Field()
