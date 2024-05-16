@@ -10,6 +10,14 @@ services:
       - database_data:/var/lib/postgresql/data/
     ports:
       - '8778:5432'
+  redis:
+    image: redis:5
+    container_name: 'redis'
+    volumes:
+      - redis_data:/data
+    ports:
+      - '6379:6379'
 
 volumes:
   database_data:
+  redis_data:
