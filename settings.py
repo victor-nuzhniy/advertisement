@@ -23,6 +23,13 @@ def _build_db_dsn(values_dict: dict, async_dsn: bool = False) -> URL:
     )
 
 
+def _build_redis_url(values_dict: dict) -> str:
+    return 'redis://{host}:{port}'.format(
+        host=values_dict['REDIS_HOST'],
+        port=values_dict['REDIS_PORT'],
+    )
+
+
 class MainSettings(BaseSettings):
     """App settings."""
 
@@ -74,12 +81,10 @@ class MainSettings(BaseSettings):
     DB_ADMIN_PASSWORD: str = Field()
 
     # REDIS DATA
-    CELERY_BROKER_REDIS_URL: str = Field(
-        'redis://localhost:6379',
-    )
-    CELERY_RESULT_BACKEND: str = Field(
-        'redis://localhost:6379',
-    )
+    REDIS_HOST: str = Field('localhost')
+    REDIS_PORT: str = Field('6379')
+    CELERY_BROKER_REDIS_URL: str = Field(default='')
+    CELERY_RESULT_BACKEND: str = Field(default='')
 
     # LOGGING SETTINGS
     LOG_LEVEL: int = Field(default=logging.WARNING)
@@ -98,6 +103,22 @@ class MainSettings(BaseSettings):
             async_dsn = False
         if not url_value:
             return _build_db_dsn(values_dict=model_info.data, async_dsn=async_dsn)
+        return url_value
+
+    @field_validator(
+        'CELERY_BROKER_REDIS_URL',
+        'CELERY_RESULT_BACKEND',
+        check_fields=True,
+    )
+    @classmethod
+    def validate_redis_url(
+        cls,
+        url_value: str,
+        model_info: ValidationInfo,
+    ) -> str:
+        """Validate celery broker redis url and celery result backend."""
+        if not url_value:
+            return _build_redis_url(values_dict=model_info.data)
         return url_value
 
 
