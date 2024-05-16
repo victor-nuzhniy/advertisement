@@ -68,6 +68,19 @@ class MainSettings(BaseSettings):
     CORS_ALLOW_METHODS: list[str] = Field(default=['*'])
     CORS_ALLOW_ORIGINS: list[str] = Field(default=['*'])
 
+    # USER DATA
+    DB_ADMIN_USERNAME: str = Field()
+    DB_ADMIN_EMAIL: str = Field()
+    DB_ADMIN_PASSWORD: str = Field()
+
+    # REDIS DATA
+    CELERY_BROKER_REDIS_URL: str = Field(
+        'redis://localhost:6379',
+    )
+    CELERY_RESULT_BACKEND: str = Field(
+        'redis://localhost:6379',
+    )
+
     # LOGGING SETTINGS
     LOG_LEVEL: int = Field(default=logging.WARNING)
     LOG_USE_COLORS: bool = Field(default=False)
