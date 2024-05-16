@@ -10,6 +10,48 @@ services:
       - database_data:/var/lib/postgresql/data/
     ports:
       - '8778:5432'
+  web_adv:
+    build:
+      context: .
+      dockerfile: Dockerfile_web
+    container_name: 'web_adv'
+    command: uvicorn apps.main:app --host 0.0.0.0 --reload
+    volumes:
+      - ./:/usr/src/app
+    env_file:
+      - .env
+    ports:
+      - '8000:8000'
+    depends_on:
+      - redis
+      - postgres_adv
+
+  worker_adv:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: 'worker_adv'
+    command: celery -A celery_app.worker.celery worker --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+    env_file:
+      - .env
+    depends_on:
+      - web_adv
+
+  beat_adv:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: 'beat_adv'
+    command: celery -A celery_app.worker.celery beat --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+    env_file:
+      - .env
+    depends_on:
+      - worker_adv
+
   redis:
     image: redis:5
     container_name: 'redis'
