@@ -5,12 +5,14 @@ from typing import Any, Sequence
 from fastapi import Request
 from sqlalchemy import Executable
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from apps.advertisements.adv_utilities import adv_auxiliary_func
 from apps.advertisements.schemas import (
     AdvInList,
     AdvNameModelQuerySchema,
     AdvPeriodQuerySchema,
+    CreateAdvIn,
 )
 from apps.advertisements.statements import adv_statements
 from apps.common.orm_services import statement_executor as executor
@@ -68,6 +70,15 @@ class AdvHandlers:
             commit=True,
             many=True,
         )
+
+    def create_adv(
+        self,
+        session: Session,
+        adv: CreateAdvIn,
+    ) -> None:
+        """Create single advertisement."""
+        statement: Executable = adv_statements.create_statement(schema=adv)
+        executor.sync_execute_return_statement(session, statement, commit=True)
 
 
 adv_handlers = AdvHandlers()
