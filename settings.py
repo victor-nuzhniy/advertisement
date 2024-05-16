@@ -88,6 +88,8 @@ class MainSettings(BaseSettings):
 
     # SCRAP TIMEOUT
     SCRAP_TIMEOUT: int = Field(default=1)
+    CLEAN_TIME: str = Field(default='6')
+    SCRAP_TIME: str = Field(default='7')
 
     # LOGGING SETTINGS
     LOG_LEVEL: int = Field(default=logging.WARNING)
