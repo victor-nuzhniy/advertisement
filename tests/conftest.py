@@ -1,14 +1,17 @@
 """Pytest fixtures for tests package."""
 
 import asyncio
-from typing import Any, Generator
+from typing import Any, AsyncGenerator, Generator
 
 import psycopg2
 import pytest
 from _pytest.monkeypatch import MonkeyPatch  # noqa
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from sqlalchemy.engine import URL
+from sqlalchemy.engine import URL, Engine
+from sqlalchemy.ext.asyncio import AsyncEngine
 
+from apps.common.db import async_session_factory as AsyncSessionFactory  # noqa
+from apps.common.db import session_factory as SessionFactory  # noqa
 from settings import Settings
 
 
@@ -122,3 +125,18 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
+
+
+@pytest.fixture(scope='session', autouse=True)
+async def mock_session_factories(
+    async_db_engine: AsyncEngine,
+    sync_db_engine: Engine,
+) -> AsyncGenerator[None, None]:
+    """Mock session_factory and async_factory from `apps.common.db`.
+
+    Notes:
+        This should prevent errors with middlewares, that are using these methods.
+    """
+    AsyncSessionFactory.configure(bind=async_db_engine)
+    SessionFactory.configure(bind=sync_db_engine)
+    yield
