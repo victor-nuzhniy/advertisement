@@ -1,6 +1,6 @@
 """Pytest fixtures for tests package."""
 
-from typing import Generator
+from typing import Any, Generator
 
 import psycopg2
 import pytest
@@ -70,3 +70,41 @@ def monkeypatch_session() -> MonkeyPatch:
     monkeypatch = MonkeyPatch()
     yield monkeypatch
     monkeypatch.undo()
+
+
+@pytest.fixture(scope='session', autouse=True)
+def no_http_requests(monkeypatch_session: MonkeyPatch) -> None:  # noqa
+    """Disable HTTP requests for 3-rd party libraries.
+
+    Notes:
+        This isn't working with 'httpx', because it uses in tests to call
+         Back-end API endpoints.
+    """
+
+    def raise_mock(*args: Any, **kwargs: Any) -> None:  # noqa
+        """Thrown and exception when tests try to use HTTP connection.
+
+        Raises:
+            RuntimeError: indicates that HTTPS request found.
+        """
+        raise RuntimeError(
+            'Found request: {args}, {kwargs}'.format(args=args, kwargs=kwargs),
+        )
+
+    # Disable library `urllib3`
+    monkeypatch_session.setattr(
+        target='urllib3.connectionpool.HTTPConnectionPool.urlopen',
+        name=raise_mock,
+    )
+    # Disable library `urllib`
+    monkeypatch_session.setattr(target='urllib.request.urlopen', name=raise_mock)
+    # Disable BackgroundTasks
+    monkeypatch_session.setattr(
+        target='fastapi.BackgroundTasks.add_task',
+        name=raise_mock,
+    )
+    # Disable library `requests`
+    monkeypatch_session.setattr(
+        target='requests.sessions.Session.request',
+        name=raise_mock,
+    )
