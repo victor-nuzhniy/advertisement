@@ -1,7 +1,11 @@
 """Pytest fixtures for tests package."""
 
+from typing import Generator
+
+import psycopg2
 import pytest
 from _pytest.monkeypatch import MonkeyPatch  # noqa
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from sqlalchemy.engine import URL
 
 from settings import Settings
@@ -33,3 +37,23 @@ def mock_db_url(monkeypatch_session: MonkeyPatch) -> None:
     )
     monkeypatch_session.setenv(name='POSTGRES_DB', value='test')
     monkeypatch_session.setattr(target=Settings, name='POSTGRES_DB', value='test')
+
+
+@pytest.fixture(scope='session', autouse=True)
+def create_database(mock_db_url: None) -> Generator[None, None, None]:  # noqa
+    """Recreate 'test' database for tests."""
+    con = psycopg2.connect(
+        'postgresql://{user}:{password}@{host}:{port}'.format(
+            user=Settings.POSTGRES_USER,
+            password=Settings.POSTGRES_PASSWORD,
+            host=Settings.POSTGRES_HOST,
+            port=Settings.POSTGRES_PORT,
+        ),
+    )
+    con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+
+    cursor = con.cursor()
+    cursor.execute('DROP DATABASE IF EXISTS {db};'.format(db=Settings.POSTGRES_DB))
+    cursor.execute('CREATE DATABASE {db};'.format(db=Settings.POSTGRES_DB))
+    yield
+    cursor.execute('DROP DATABASE IF EXISTS {db};'.format(db=Settings.POSTGRES_DB))
