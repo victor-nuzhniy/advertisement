@@ -57,3 +57,16 @@ def create_database(mock_db_url: None) -> Generator[None, None, None]:  # noqa
     cursor.execute('CREATE DATABASE {db};'.format(db=Settings.POSTGRES_DB))
     yield
     cursor.execute('DROP DATABASE IF EXISTS {db};'.format(db=Settings.POSTGRES_DB))
+
+
+@pytest.fixture(scope='session')
+def monkeypatch_session() -> MonkeyPatch:
+    """Create monkeypatch for session scope.
+
+    Yields:
+        monkeypatch (MonkeyPatch): MonkeyPatch instance with `session`
+        (one time per tests run)
+    """
+    monkeypatch = MonkeyPatch()
+    yield monkeypatch
+    monkeypatch.undo()
