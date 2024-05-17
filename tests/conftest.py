@@ -1,5 +1,6 @@
 """Pytest fixtures for tests package."""
 
+import asyncio
 from typing import Any, Generator
 
 import psycopg2
@@ -108,3 +109,16 @@ def no_http_requests(monkeypatch_session: MonkeyPatch) -> None:  # noqa
         target='requests.sessions.Session.request',
         name=raise_mock,
     )
+
+
+@pytest.fixture(scope='session', autouse=True)
+def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
+    """Create asyncio (uvloop) for tests runtime.
+
+    Yields:
+        loop (asyncio.AbstractEventLoop): Shared with FastAPI, asyncio instance
+         loop, that created for tests runs.
+    """
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
