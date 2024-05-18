@@ -297,3 +297,25 @@ async def session_factory(
         expire_on_commit=False,
         class_=AsyncSession,
     )
+
+
+@pytest.fixture(scope='function')
+def sync_db_session(
+    sync_session_factory: sessionmaker,
+) -> Generator[Session, None, None]:
+    """Create sync session for database and rollback it after test."""
+    with sync_session_factory() as session:
+        yield session
+        session.rollback()
+        session.close()
+
+
+@pytest.fixture(scope='function')
+async def db_session(
+    session_factory: sessionmaker,
+) -> AsyncGenerator[AsyncSession, None]:
+    """Create async session for database and rollback it after test."""
+    async with session_factory(autoflush=False) as async_session:
+        yield async_session
+        await async_session.rollback()
+        await async_session.close()
