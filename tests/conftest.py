@@ -3,15 +3,18 @@
 import asyncio
 from typing import Any, AsyncGenerator, Generator
 
+import fastapi
 import psycopg2
 import pytest
 from _pytest.monkeypatch import MonkeyPatch  # noqa
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from sqlalchemy.engine import URL, Engine
-from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
+from sqlalchemy.orm import Session
 
 from apps.common.db import async_session_factory as AsyncSessionFactory  # noqa
 from apps.common.db import session_factory as SessionFactory  # noqa
+from apps.common.dependencies import get_async_session, get_session
 from settings import Settings
 
 
@@ -140,3 +143,38 @@ async def mock_session_factories(
     AsyncSessionFactory.configure(bind=async_db_engine)
     SessionFactory.configure(bind=sync_db_engine)
     yield
+
+
+@pytest.fixture(scope='function')
+async def app_fixture(
+    db_session: AsyncSession,
+    sync_db_session: Session,
+    event_loop: asyncio.AbstractEventLoop,
+) -> AsyncGenerator[fastapi.FastAPI, None]:
+    """Override dependencies for FastAPI and returns FastAPI instance (app).
+
+    Yields:
+        app (fastapi.FastAPI): Instance of FastAPI ASGI application.
+    """
+
+    async def override_get_async_session() -> AsyncSession:
+        """
+        Replace get_async_session dependency with AsyncSession.
+
+        From `db_session` fixture.
+        """
+        return db_session
+
+    def override_get_session() -> Session:
+        """
+        Replace get_session dependency with Session.
+
+        From `sync_db_session` fixture.
+        """
+        return sync_db_session
+
+    from apps.main import app
+
+    app.dependency_overrides[get_async_session] = override_get_async_session
+    app.dependency_overrides[get_session] = override_get_session
+    yield app
