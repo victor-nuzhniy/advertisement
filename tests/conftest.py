@@ -1,6 +1,7 @@
 """Pytest fixtures for tests package."""
 
 import asyncio
+import random
 from typing import Any, AsyncGenerator, Generator
 
 import fastapi
@@ -197,3 +198,9 @@ async def async_client(
         base_url='http://{host}:{port}'.format(host=Settings.HOST, port=Settings.PORT),
     ) as httpx_client:
         yield httpx_client
+
+
+@pytest.fixture(scope='function', autouse=True)
+def faker_seed() -> None:
+    """Generate random seed for Faker instance."""
+    return random.seed(version=3)
