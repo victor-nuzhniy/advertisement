@@ -17,7 +17,7 @@ class AdvertisementFactory(BaseModelFactory):
     model = factory.Faker('country')
     region = factory.Faker('city')
     run = factory.Faker('pyint')
-    color = factory.Faker('color')
+    color = factory.Faker('color_name')
     salon = factory.Faker('pystr', max_chars=50)
     seller = factory.Faker('first_name')
     adv_date = factory.Faker('date')
