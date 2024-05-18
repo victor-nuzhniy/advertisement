@@ -23,7 +23,7 @@ def run_crawler() -> None:
     def crawl():  # type: ignore
         yield runner.crawl(AdvsSpider)
         yield runner.crawl(AdvSpider)
-        reactor.stop()  # type: ignore
 
     crawl()
-    reactor.run()  # type: ignore
+    if not reactor.running:  # type: ignore
+        reactor.run()  # type: ignore
