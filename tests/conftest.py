@@ -13,8 +13,13 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pytest_alembic import Config, runner
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL, Engine
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
+from sqlalchemy.orm import Session, sessionmaker
 
 from apps.common.db import async_session_factory as AsyncSessionFactory  # noqa
 from apps.common.db import session_factory as SessionFactory  # noqa
@@ -274,3 +279,21 @@ async def async_db_engine(
         yield async_engine
     finally:
         await async_engine.dispose()
+
+
+@pytest.fixture(scope='function')
+def sync_session_factory(sync_db_engine: Engine) -> Generator[sessionmaker, None, None]:
+    """Create async session factory."""
+    yield sessionmaker(bind=sync_db_engine, expire_on_commit=False, class_=Session)
+
+
+@pytest.fixture(scope='function')
+async def session_factory(
+    async_db_engine: AsyncEngine,
+) -> AsyncGenerator[async_sessionmaker, None]:
+    """Create async session factory."""
+    yield async_sessionmaker(
+        bind=async_db_engine,
+        expire_on_commit=False,
+        class_=AsyncSession,
+    )
