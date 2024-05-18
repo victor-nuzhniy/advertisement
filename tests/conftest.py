@@ -10,6 +10,7 @@ import psycopg2
 import pytest
 from _pytest.monkeypatch import MonkeyPatch  # noqa
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+from pytest_alembic import Config, runner
 from sqlalchemy.engine import URL, Engine
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from sqlalchemy.orm import Session
@@ -204,3 +205,38 @@ async def async_client(
 def faker_seed() -> None:
     """Generate random seed for Faker instance."""
     return random.seed(version=3)
+
+
+@pytest.fixture(scope='session')
+def alembic_config() -> Config:
+    """Get alembic configuration fixture."""
+    return Config()
+
+
+@pytest.fixture(scope='session')
+def alembic_engine(sync_db_engine: Engine) -> Engine:
+    """Get alembic sync engine fixture."""
+    return sync_db_engine
+
+
+@pytest.fixture(scope='session')
+def alembic_runner(
+    alembic_config: Config,
+    alembic_engine: Engine,
+) -> Generator[runner, None, None]:
+    """Get alembic runner fixture."""
+    config = Config.from_raw_config(alembic_config)
+    with runner(config=config, engine=alembic_engine) as alembic_runner:
+        yield alembic_runner
+
+
+@pytest.fixture(scope='session', autouse=True)
+def apply_migrations(
+    create_database: None,
+    alembic_runner: runner,
+    alembic_engine: Engine,
+) -> Generator[None, None, None]:
+    """Apply all migrations from base to head."""
+    alembic_runner.migrate_up_to(revision='head')
+    yield
+    alembic_runner.migrate_down_to(revision='base')
