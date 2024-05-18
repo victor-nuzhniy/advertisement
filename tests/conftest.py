@@ -129,7 +129,7 @@ def no_http_requests(monkeypatch_session: MonkeyPatch) -> None:  # noqa
 
 
 @pytest.fixture(scope='session', autouse=True)
-def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
+def custom_event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     """Create asyncio (uvloop) for tests runtime.
 
     Yields:
@@ -160,7 +160,7 @@ async def mock_session_factories(
 async def app_fixture(
     db_session: AsyncSession,
     sync_db_session: Session,
-    event_loop: asyncio.AbstractEventLoop,
+    custom_event_loop: asyncio.AbstractEventLoop,
 ) -> AsyncGenerator[fastapi.FastAPI, None]:
     """Override dependencies for FastAPI and returns FastAPI instance (app).
 
@@ -194,7 +194,7 @@ async def app_fixture(
 @pytest.fixture(scope='function')
 async def async_client(
     app_fixture: fastapi.FastAPI,
-    event_loop: asyncio.AbstractEventLoop,
+    custom_event_loop: asyncio.AbstractEventLoop,
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
     """Prepare async HTTP client with FastAPI app context.
 
@@ -266,7 +266,7 @@ def sync_db_engine() -> Generator[Engine, None, None]:
 
 @pytest.fixture(scope='session')
 async def async_db_engine(
-    event_loop: asyncio.AbstractEventLoop,
+    custom_event_loop: asyncio.AbstractEventLoop,
 ) -> AsyncGenerator[AsyncEngine, None]:
     """Create async database engine and dispose it after all tests.
 
