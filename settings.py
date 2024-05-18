@@ -141,4 +141,4 @@ if Settings.DEBUG:
     import pprint  # noqa WPS400
 
     printer = pprint.PrettyPrinter()
-    printer.pprint(Settings.dict())
+    printer.pprint(Settings.model_dump())
