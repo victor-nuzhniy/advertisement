@@ -3,7 +3,7 @@
 import logging
 from functools import lru_cache
 
-from pydantic import Extra, Field, field_validator
+from pydantic import Field, field_validator
 from pydantic_core.core_schema import ValidationInfo
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import URL
@@ -34,7 +34,7 @@ class MainSettings(BaseSettings):
     """App settings."""
 
     model_config = SettingsConfigDict(
-        extra=Extra.ignore,
+        extra='ignore',
         env_file='.env',
         env_file_encoding='UTF-8',
         env_nested_delimiter='__',
