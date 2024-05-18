@@ -11,8 +11,9 @@ import pytest
 from _pytest.monkeypatch import MonkeyPatch  # noqa
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pytest_alembic import Config, runner
+from sqlalchemy import create_engine
 from sqlalchemy.engine import URL, Engine
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import Session
 
 from apps.common.db import async_session_factory as AsyncSessionFactory  # noqa
@@ -240,3 +241,36 @@ def apply_migrations(
     alembic_runner.migrate_up_to(revision='head')
     yield
     alembic_runner.migrate_down_to(revision='base')
+
+
+@pytest.fixture(scope='session')
+def sync_db_engine() -> Generator[Engine, None, None]:
+    """Create sync database engine and dispose it after all tests.
+
+    Yields:
+        engine (Engine): SQLAlchemy Engine instance.
+    """
+    engine = create_engine(url=Settings.POSTGRES_DSN, echo=Settings.POSTGRES_ECHO)
+    try:
+        yield engine
+    finally:
+        engine.dispose()
+
+
+@pytest.fixture(scope='session')
+async def async_db_engine(
+    event_loop: asyncio.AbstractEventLoop,
+) -> AsyncGenerator[AsyncEngine, None]:
+    """Create async database engine and dispose it after all tests.
+
+    Yields:
+        async_engine (AsyncEngine): SQLAlchemy AsyncEngine instance.
+    """
+    async_engine = create_async_engine(
+        url=Settings.POSTGRES_DSN_ASYNC,
+        echo=Settings.POSTGRES_ECHO,
+    )
+    try:
+        yield async_engine
+    finally:
+        await async_engine.dispose()
