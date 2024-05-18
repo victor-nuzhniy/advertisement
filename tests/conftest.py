@@ -4,6 +4,7 @@ import asyncio
 from typing import Any, AsyncGenerator, Generator
 
 import fastapi
+import httpx
 import psycopg2
 import pytest
 from _pytest.monkeypatch import MonkeyPatch  # noqa
@@ -178,3 +179,21 @@ async def app_fixture(
     app.dependency_overrides[get_async_session] = override_get_async_session
     app.dependency_overrides[get_session] = override_get_session
     yield app
+
+
+@pytest.fixture(scope='function')
+async def async_client(
+    app_fixture: fastapi.FastAPI,
+    event_loop: asyncio.AbstractEventLoop,
+) -> AsyncGenerator[httpx.AsyncClient, None]:
+    """Prepare async HTTP client with FastAPI app context.
+
+    Yields:
+        httpx_client (httpx.AsyncClient): Instance of AsyncClient to
+        perform a requests to API.
+    """
+    async with httpx.AsyncClient(
+        app=app_fixture,
+        base_url='http://{host}:{port}'.format(host=Settings.HOST, port=Settings.PORT),
+    ) as httpx_client:
+        yield httpx_client
