@@ -1,80 +1,15 @@
 """Bases for tests."""
 
-import datetime
 import random
-from typing import Any, Sequence, Type
+from typing import Any, Type
 
 import factory
-from pydantic_factories import AsyncPersistenceProtocol, ModelFactory, PostGenerated
-from pytz import utc
+from faker import Faker
 
-from apps.common.base_statements import BaseCRUDStatements
-from apps.common.common_types import ModelType, SchemaType
-from apps.common.db import Base, async_session_factory
-from apps.common.orm_services import statement_executor as executor
+from apps.common.common_types import ModelType
+from apps.common.db import Base
 
 starting_seq_num = 0
-
-
-class AsyncPersistenceHandler(AsyncPersistenceProtocol):
-    """AsyncPersistenceHandler class."""
-
-    def __init__(self, model: Type[Base]) -> None:
-        """Initialize class."""
-        self._model = model
-        self._service = BaseCRUDStatements(model=self._model)
-
-    async def save(
-        self,
-        model_data: SchemaType,  # type: ignore
-    ) -> ModelType | Sequence[ModelType] | None:
-        """Save given model_data."""
-        async with async_session_factory() as db_session:
-            async with db_session.begin():
-                statement = self._service.create_statement(schema=model_data)
-                return await executor.execute_return_statement(
-                    session=db_session,
-                    statement=statement,
-                    commit=True,
-                )
-
-    async def save_many(
-        self,
-        model_data: SchemaType,  # type: ignore
-    ) -> list[ModelType] | Sequence[list[ModelType]] | None:
-        """Save many given model_data."""
-        async with async_session_factory() as db_session:
-            async with db_session.begin():
-                statement = self._service.create_many_statement(schemas=model_data)
-                return await executor.execute_return_statement(
-                    session=db_session,
-                    statement=statement,
-                    commit=True,
-                    many=True,
-                )
-
-
-class BaseRawFactory(ModelFactory):
-    """Base raw factory class."""
-
-    @classmethod
-    def get_mock_value(cls, field_type: Any) -> Any:
-        """Mock field type."""
-        type_name = str(field_type.__name__)
-        if type_name == 'Email':
-            return cls.get_faker().email()
-        return super().get_mock_value(field_type)
-
-
-def generate_dt(name: str, values_data: dict[str, Any]) -> datetime.datetime:
-    """Generate now datetime with tz."""
-    return datetime.datetime.now(tz=utc)
-
-
-class BaseFactory(BaseRawFactory):
-    """BaseFactory class."""
-
-    created_at: datetime.datetime = PostGenerated(fn=generate_dt)
 
 
 class BaseModelFactory(factory.alchemy.SQLAlchemyModelFactory):
@@ -86,8 +21,8 @@ class BaseModelFactory(factory.alchemy.SQLAlchemyModelFactory):
         abstract = True
         sqlalchemy_session_persistence = 'commit'
 
-    def check_factory(
-        self,
+    @staticmethod
+    def check_factory(  # noqa
         factory_class: Type['BaseModelFactory'],
         model: Type[Base],
     ) -> None:
@@ -114,3 +49,14 @@ class BaseModelFactory(factory.alchemy.SQLAlchemyModelFactory):
                 ),
             )
         return super()._create(model_class, *args, **kwargs)
+
+
+class UniqueFaker(factory.Faker):
+    """UniqueFaker class."""
+
+    def evaluate(self, instance, step, extra):  # type: ignore
+        """Evaluate faker instance."""
+        locale = extra.pop('locale')
+        subfaker: Faker = self._get_faker(locale)
+        unique_proxy = subfaker.unique
+        return unique_proxy.format(self.provider, **extra)
