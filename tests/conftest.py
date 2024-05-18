@@ -25,6 +25,7 @@ from apps.common.db import async_session_factory as AsyncSessionFactory  # noqa
 from apps.common.db import session_factory as SessionFactory  # noqa
 from apps.common.dependencies import get_async_session, get_session
 from settings import Settings
+from tests.apps.user.factories import UserFactory
 from tests.bases import BaseModelFactory
 
 
@@ -339,6 +340,7 @@ def set_session_for_factories(scoped_db_session: scoped_session) -> None:
     To set up a scoped session during the test run.
     """
     known_factories: list[Type[BaseModelFactory]] = [
+        UserFactory,
         # === Add new factory classes here!!! ===
     ]
 
