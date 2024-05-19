@@ -11,7 +11,7 @@ import pytest
 from _pytest.monkeypatch import MonkeyPatch  # noqa
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pytest_alembic import Config, runner
-from sqlalchemy import create_engine
+from sqlalchemy import NullPool, create_engine
 from sqlalchemy.engine import URL, Engine
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -137,7 +137,7 @@ def custom_event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
         loop (asyncio.AbstractEventLoop): Shared with FastAPI, asyncio instance
          loop, that created for tests runs.
     """
-    loop = asyncio.get_event_loop_policy().new_event_loop()
+    loop = asyncio.get_event_loop()
     yield loop
     loop.close()
 
@@ -277,6 +277,7 @@ async def async_db_engine(
     async_engine = create_async_engine(
         url=Settings.POSTGRES_DSN_ASYNC,
         echo=Settings.POSTGRES_ECHO,
+        poolclass=NullPool,
     )
     try:
         yield async_engine
