@@ -1,11 +1,14 @@
 """Module for testing advertisement apps handlers."""
 
+from typing import Sequence, Sized
+
 from faker import Faker
 from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.advertisements.handlers import adv_handlers
-from apps.advertisements.schemas import AdvPeriodQuerySchema
+from apps.advertisements.models import Advertisement
+from apps.advertisements.schemas import AdvNameModelQuerySchema, AdvPeriodQuerySchema
 from tests.apps.advertisements.factories import AdvertisementFactory
 
 
@@ -25,7 +28,12 @@ class TestAdvHandlersGetAdvPeriodList:
             begin=start_date.strftime('%Y-%m-%d'),
             end=end_date.strftime('%Y-%m-%d'),
         )
-        expected_result: list = []
+        already_in_db = await adv_handlers.get_adv_period_list(
+            Request({'type': 'http'}),
+            db_session,
+            period,
+        )
+        expected_result: list[Advertisement] = []
         for _ in range(1, number + 1):
             expected_result.append(
                 AdvertisementFactory(
@@ -41,5 +49,49 @@ class TestAdvHandlersGetAdvPeriodList:
             db_session,
             period,
         )
-        for index, elem in enumerate(actual_result):  # type: ignore
-            assert elem.id == expected_result[index].id
+        assert isinstance(actual_result, Sequence)
+        assert isinstance(already_in_db, Sized)
+        for index, elem in enumerate(expected_result):
+            assert (
+                elem.id == actual_result[index + len(already_in_db)].id  # type: ignore
+            )
+
+    async def test_get_name_model_stat(
+        self,
+        faker: Faker,
+        db_session: AsyncSession,
+    ) -> None:
+        """Test get_name_model_stat method."""
+        name = faker.pystr(min_chars=10)
+        model = faker.pystr(min_chars=11)
+        number = faker.random_int(min=3, max=7)
+        for index in range(1, number + 1):
+            AdvertisementFactory(
+                name=name,
+                model=model,
+                price=index,
+                adv_date=faker.date_between(start_date='-1d'),
+            )
+            AdvertisementFactory(
+                name=name,
+                model=model,
+                price=index,
+                adv_date=faker.date_between(start_date='-7d', end_date='-1d'),
+            )
+            AdvertisementFactory(
+                name=name,
+                model=model,
+                price=index,
+                adv_date=faker.date_between(start_date='-30d', end_date='-7d'),
+            )
+            AdvertisementFactory.create_batch(3)
+        actual_result = await adv_handlers.get_name_model_stat(
+            Request({'type': 'http'}),
+            db_session,
+            AdvNameModelQuerySchema(name=name, model=model),
+        )
+        assert actual_result['min_price'] == 1
+        assert actual_result['max_price'] == number
+        assert actual_result['num_day'] == number
+        assert actual_result['num_week'] == 2 * number
+        assert actual_result['num_month'] == 3 * number
