@@ -2,7 +2,7 @@
 
 from datetime import date, datetime
 
-from pydantic import Field, computed_field, field_validator
+from pydantic import Field, field_validator
 from typing_extensions import Annotated
 
 from apps.common.schemas import BaseInSchema, BaseOutSchema
@@ -57,20 +57,20 @@ class CreateAdvIn(BaseInSchema):
             description='Seller contacts',
         ),
     ]
-    created: Annotated[
+    adv_date: Annotated[
         str,
         Field(
-            exclude=True,
             examples=['2024-10-15'],
             description='Advertisement date creation in str',
         ),
     ]
 
-    @computed_field
-    def adv_date(self) -> date | None:
+    @field_validator('adv_date')
+    @classmethod
+    def validate_adv_date(cls, adv_date_value: str) -> date | None:
         """Create date from str."""
         try:
-            date_object = datetime.strptime(self.created, '%Y-%m-%d').date()
+            date_object = datetime.strptime(adv_date_value, '%Y-%m-%d').date()
         except ValueError:
             date_object = None
         return date_object
