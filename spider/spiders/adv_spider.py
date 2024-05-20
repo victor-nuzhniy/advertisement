@@ -67,7 +67,7 @@ class AdvSpider(Spider):
         )
         spider_item.add_xpath('seller', './/div[@class="seller_info_name bold"]/text()')
         spider_item.add_xpath(
-            'created',
+            'adv_date',
             './/div[@class="size13 mt-5 mb-10 update-date"]/span/text()',
         )
         spider_item.load_item()

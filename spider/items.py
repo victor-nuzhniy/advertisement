@@ -106,7 +106,7 @@ class SpiderItem(Item):
         input_processor=MapCompose(add_func.check_none, str.strip),
         output_processor=TakeFirst(),
     )
-    created = Field(
+    adv_date = Field(
         input_processor=MapCompose(
             add_func.check_none,
             str.strip,
