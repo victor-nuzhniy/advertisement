@@ -62,3 +62,11 @@ pages url, and to load only 10 pages from saved list.
 4. Try app with domain http://127.0.0.1:8000/docs#/
 5. For forced loading scraped data SCRAP_TIME_HOUR and SCRAP_TIME_MINUTE can
     be set right after the current time.
+
+   
+## Testing
+
+1. To perform testing at least db container should run. And
+   .env POSTGRES_HOST=localhost, POSTGRES_PORT=8778 should be set.
+2. Test dependencies should be installed with       poetry install --with test
+2. To run test perform command    pytest --cov
