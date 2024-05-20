@@ -168,3 +168,19 @@ class AdvStatOutSchema(BaseOutSchema):
     num_day: int
     num_week: int
     num_month: int
+
+
+class UrlSchema(BaseInSchema):
+    """Schema url validation and changing."""
+
+    url: Annotated[
+        str,
+        Field(
+            min_length=3,
+            max_length=255,
+            examples=[
+                'some_adv_123',
+            ],
+            description='Url search advertisement by, only last part of url path.',
+        ),
+    ]
