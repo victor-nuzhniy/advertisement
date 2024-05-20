@@ -5,7 +5,11 @@ from datetime import datetime
 from sqlalchemy import Executable, delete, func, select
 
 from apps.advertisements.models import Advertisement
-from apps.advertisements.schemas import AdvNameModelQuerySchema, AdvPeriodQuerySchema
+from apps.advertisements.schemas import (
+    AdvNameModelQuerySchema,
+    AdvPeriodQuerySchema,
+    UrlSchema,
+)
 from apps.common.base_statements import BaseCRUDStatements
 
 
@@ -55,6 +59,13 @@ class AdvStatements(BaseCRUDStatements):
     ) -> Executable:
         """Create statement for deleting old advertisements."""
         return delete(self.model).where(self.model.created_at <= old_date)
+
+    def get_adv_by_url_statement(
+        self,
+        url: UrlSchema,
+    ) -> Executable:
+        """Create statement for getting advertisement by url."""
+        return select(self.model).filter(self.model.url.endswith(url.url))
 
 
 adv_statements = AdvStatements(model=Advertisement)
