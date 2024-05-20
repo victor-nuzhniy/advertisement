@@ -178,9 +178,15 @@ class UrlSchema(BaseInSchema):
         Field(
             min_length=3,
             max_length=255,
-            examples=[
-                'some_adv_123',
-            ],
-            description='Url search advertisement by, only last part of url path.',
+            examples=['some_adv_123', 'some_adv_123.html'],
+            description='Url last path search advertisement by',
         ),
     ]
+
+    @field_validator('url')
+    @classmethod
+    def validate_data(cls, url_value: str) -> str:
+        """Validate and parse url_value."""
+        if url_value.endswith('.html'):
+            return url_value
+        return '{url_value}.html'.format(url_value=url_value)
