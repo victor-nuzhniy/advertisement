@@ -9,11 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from apps.advertisements.adv_utilities import adv_auxiliary_func
+from apps.advertisements.models import Advertisement
 from apps.advertisements.schemas import (
     AdvInList,
     AdvNameModelQuerySchema,
     AdvPeriodQuerySchema,
     CreateAdvIn,
+    UrlSchema,
 )
 from apps.advertisements.statements import adv_statements
 from apps.common.orm_services import statement_executor as executor
@@ -89,6 +91,25 @@ class AdvHandlers:
         """Delete advertisements, older than argument."""
         statement: Executable = adv_statements.delete_old_statement(old_date=old_date)
         executor.sync_execute_delete_statement(session, statement)
+
+    async def get_adv_by_url(
+        self,
+        request: Request,
+        session: AsyncSession,
+        url: UrlSchema,
+    ) -> Any:
+        """Get advertisement by url."""
+        statement: Executable = adv_statements.get_adv_by_url_statement(url)
+        advertisements: Advertisement | Sequence[Advertisement] | None = (
+            await executor.execute_return_statement(
+                session,
+                statement,
+                many=True,
+            )
+        )
+        if advertisements:
+            return advertisements[0]
+        return None
 
 
 adv_handlers = AdvHandlers()
