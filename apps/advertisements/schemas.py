@@ -132,11 +132,11 @@ class AdvPeriodQuerySchema(BaseInSchema):
     begin: Annotated[
         str | None,
         Field(examples=['2023-10-12'], description='Start period date.'),
-    ]
+    ] = None
     end: Annotated[
         str | None,
         Field(examples=['2023-11-12'], description='End period date.'),
-    ]
+    ] = None
 
     @field_validator('begin', 'end')
     @classmethod
