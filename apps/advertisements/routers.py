@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.advertisements.handlers import adv_handlers
@@ -14,9 +14,11 @@ from apps.advertisements.schemas import (
     AdvPeriodQuerySchema,
     AdvStatOutSchema,
     CreateAdvIn,
+    UrlSchema,
 )
 from apps.common.base_routers import BaseRouterInitializer
 from apps.common.dependencies import get_async_session
+from apps.common.enum import JSENDStatus
 from apps.common.schemas import JSENDFailOutSchema, JSENDOutSchema
 from apps.common.user_dependencies import get_current_admin_user, get_current_user
 from apps.user.models import User
@@ -118,4 +120,38 @@ async def bulk_create_adv(
     return {
         'data': None,
         'message': 'Successfully created advertisements.',
+    }
+
+
+@adv_router.get(
+    '/advertisement/{url}/',
+    name='get_adv_by_url',
+    response_model=JSENDOutSchema[AdvOut],
+    summary='Get advertisement by url.',
+    responses={
+        200: {'description': 'Successfully created many advertisement.'},
+        422: {'model': JSENDFailOutSchema, 'description': 'ValidationError'},
+    },
+    tags=['Advertisement application'],
+)
+async def get_adv_by_url(
+    request: Request,
+    url: Annotated[UrlSchema, Depends()],
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> dict:
+    """Get advertisement by its url."""
+    advertisement = await adv_handlers.get_adv_by_url(request, session, url)
+    if advertisement:
+        return {
+            'data': advertisement,
+            'message': 'Successfully get advertisement by url path: {url}'.format(
+                url=url,
+            ),
+        }
+    return {
+        'data': advertisement,
+        'message': 'Nothing was found with url path: {url}'.format(url=url),
+        'status': JSENDStatus.FAIL,
+        'code': status.HTTP_404_NOT_FOUND,
     }
