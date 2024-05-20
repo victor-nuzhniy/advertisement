@@ -20,8 +20,6 @@ celery.conf.beat_schedule = {
             minute=Settings.CLEAN_TIME_MINUTE,
         ),
     },
-}
-celery.conf.beat_schedule = {
     'scrap': {
         'task': 'scrap',
         'schedule': crontab(
