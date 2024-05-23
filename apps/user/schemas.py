@@ -2,7 +2,13 @@
 
 from re import fullmatch
 
-from pydantic import Field, computed_field, field_validator, model_validator
+from pydantic import (
+    Field,
+    ValidationError,
+    computed_field,
+    field_validator,
+    model_validator,
+)
 from typing_extensions import Annotated
 
 from apps.authorization.auth_utilities import get_hashed_password
@@ -83,12 +89,13 @@ class AdminPartiallyUserIn(BaseInSchema):
 
     @field_validator('email')
     @classmethod
-    def validate_email(cls, email_value: str) -> str | None:
+    def validate_email(cls, email_value: str) -> str:
         """Validate email field."""
         if email_value is not None:
             if not fullmatch(EMAIL_REGEX, email_value):
                 raise ValueError('Invalid email address format')
             return email_value
+        raise ValidationError('Email may not be empty')
 
 
 class AdminUserIn(BaseInSchema):
