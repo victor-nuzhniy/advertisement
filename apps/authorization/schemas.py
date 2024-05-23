@@ -47,3 +47,10 @@ class AuthOut(BaseOutSchema):
     access_token: Annotated[str, Field(description='User access token')]
     refresh_token: Annotated[str, Field(description='User refresh token')]
     id: Annotated[int, Field(description='User id')]
+
+
+class AuthIn(BaseInSchema):
+    """Authorization out schema."""
+
+    username: Annotated[str, Field(description='Username for login.')]
+    password: Annotated[str, Field(description='User password')]
