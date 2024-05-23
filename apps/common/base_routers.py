@@ -208,7 +208,7 @@ class BaseRouterInitializer(BaseInitializer):
         @self.router.post(**self._kwargs_generator.get_post_router_kwargs())
         async def create_instance(  # noqa: WPS430
             request: Request,
-            schema: Annotated[schema_type, Depends()],
+            schema: schema_type,
             user: Annotated[User, Depends(get_current_admin_user)],
             session: Annotated[AsyncSession, Depends(get_async_session)],
         ) -> dict:
@@ -281,7 +281,7 @@ class BaseRouterInitializer(BaseInitializer):
         async def update_instance(  # noqa: WPS430
             request: Request,
             instance_id: int,
-            schema: Annotated[schema_type, Depends()],
+            schema: schema_type,
             user: Annotated[User, Depends(get_current_admin_user)],
             session: Annotated[AsyncSession, Depends(get_async_session)],
         ) -> dict:
@@ -325,7 +325,7 @@ class BaseRouterInitializer(BaseInitializer):
         async def partially_update_instance(  # noqa: WPS430
             request: Request,
             instance_id: int,
-            schema: Annotated[schema_type, Depends()],
+            schema: schema_type,
             user: Annotated[User, Depends(get_current_admin_user)],
             session: Annotated[AsyncSession, Depends(get_async_session)],
         ) -> dict:
