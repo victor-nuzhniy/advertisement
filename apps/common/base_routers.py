@@ -244,7 +244,7 @@ class BaseRouterInitializer(BaseInitializer):
             schema_type = self._in_create_schema
 
         @self.router.get(**self._kwargs_generator.get_read_router_kwargs())
-        async def create_instance(  # noqa: WPS430
+        async def get_instance(  # noqa: WPS430
             request: Request,
             instance_id: int,
             user: Annotated[User, Depends(get_current_admin_user)],
