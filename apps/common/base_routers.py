@@ -202,10 +202,14 @@ class BaseInitializer:
         """Get given schemas fields description."""
         result_list = []
         for key, key_val in schema.model_fields.items():
+            if key_val.annotation:
+                value_type = key_val.annotation.__name__
+            else:
+                value_type = 'type'
             result_list.append(
                 '- **{key}**: {type} {desc}{required}'.format(
                     key=key,
-                    type=key_val.annotation,
+                    type=value_type,
                     desc=key_val.description,
                     required=required,
                 ),
@@ -227,9 +231,15 @@ class BaseInitializer:
         )
         path_section = ''
         if has_path:
-            path_section = '**Path**\n- **instance_id**: int {n} id to {a}\n'.format(
-                n=self.model.__name__,
-                a=router_type,
+            path_section = ''.join(
+                (
+                    '**Path**\n- **instance_id**: int {name}'.format(
+                        name=self.model.__name__,
+                    ),
+                    ' id to {action}, required\n'.format(
+                        action=router_type,
+                    ),
+                ),
             )
         input_section = ''
         if router_type in {'create', 'update', 'partially update'}:
