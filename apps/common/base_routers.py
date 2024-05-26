@@ -7,7 +7,7 @@ from typing_extensions import TYPE_CHECKING, Annotated, Any, Sequence, TypeAlias
 
 from apps.common.base_statements import BaseCRUDStatements
 from apps.common.common_types import ModelType, SchemaType
-from apps.common.common_utilities import checkers
+from apps.common.common_utilities import change_docstring, checkers
 from apps.common.dependencies import get_async_session
 from apps.common.orm_services import statement_executor as executor
 from apps.common.schemas import JSENDErrorOutSchema, JSENDFailOutSchema, JSENDOutSchema
@@ -194,6 +194,62 @@ class BaseInitializer:
         self.model = model
         self._kwargs_generator = BaseRouterKwargs(model.__name__.lower(), out_schema)
 
+    def get_schema_fields_doc_description(
+        self,
+        schema: SchemaType,  # type: ignore
+        required: str = '',
+    ) -> str:
+        """Get given schemas fields description."""
+        result_list = []
+        for key, key_val in schema.model_fields.items():
+            result_list.append(
+                '- **{key}**: {type} {desc}{required}'.format(
+                    key=key,
+                    type=key_val.annotation,
+                    desc=key_val.description,
+                    required=required,
+                ),
+            )
+        return '\n'.join(result_list)
+
+    def create_router_docstring(
+        self,
+        router_type: str,
+        has_path: bool = True,
+        has_return: bool = True,
+        ending: str = '',
+    ) -> str:
+        """Create create_router docstring."""
+        title = '**{type} {model} record{ending}.**\n'.format(
+            type=router_type.title(),
+            model=self.model.__name__.lower(),
+            ending=ending,
+        )
+        path_section = ''
+        if has_path:
+            path_section = '**Path**\n- **instance_id**: int {n} id to {a}\n'.format(
+                n=self.model.__name__,
+                a=router_type,
+            )
+        input_section = ''
+        if router_type in {'create', 'update', 'partially update'}:
+            required = ''
+            if router_type in {'create', 'update'}:
+                required = ', required'
+            input_section = '**Body**\n{schema}\n'.format(
+                schema=self.get_schema_fields_doc_description(
+                    self._in_create_schema,
+                    required,
+                ),
+            )
+        return_section = ''
+        if has_return:
+            return_section = '**Return schema{ending}**\n{schema}\n'.format(
+                ending=ending,
+                schema=self.get_schema_fields_doc_description(self.out_schema),
+            )
+        return '\n'.join([title, path_section, input_section, return_section])
+
 
 class BaseRouterInitializer(BaseInitializer):
     """Base router initializer for admin interface."""
@@ -204,8 +260,13 @@ class BaseRouterInitializer(BaseInitializer):
             schema_type: TypeAlias = SchemaType
         else:
             schema_type = self._in_create_schema
+        docstring = self.create_router_docstring(
+            'create',
+            has_path=False,
+        )
 
         @self.router.post(**self._kwargs_generator.get_post_router_kwargs())
+        @change_docstring(docstring)
         async def create_instance(  # noqa: WPS430
             request: Request,
             schema: schema_type,
@@ -242,8 +303,10 @@ class BaseRouterInitializer(BaseInitializer):
             schema_type: TypeAlias = SchemaType
         else:
             schema_type = self._in_create_schema
+        docstring = self.create_router_docstring('read')
 
         @self.router.get(**self._kwargs_generator.get_read_router_kwargs())
+        @change_docstring(docstring)
         async def get_instance(  # noqa: WPS430
             request: Request,
             instance_id: int,
@@ -276,8 +339,12 @@ class BaseRouterInitializer(BaseInitializer):
             schema_type: TypeAlias = SchemaType
         else:
             schema_type = self._in_update_schema
+        docstring = self.create_router_docstring(
+            'update',
+        )
 
         @self.router.put(**self._kwargs_generator.get_update_router_kwargs())
+        @change_docstring(docstring)
         async def update_instance(  # noqa: WPS430
             request: Request,
             instance_id: int,
@@ -318,10 +385,12 @@ class BaseRouterInitializer(BaseInitializer):
             schema_type: TypeAlias = SchemaType
         else:
             schema_type = self._in_part_update_schema
+        docstring = self.create_router_docstring('partially update')
 
         @self.router.patch(
             **self._kwargs_generator.get_partially_update_router_kwargs(),
         )
+        @change_docstring(docstring)
         async def partially_update_instance(  # noqa: WPS430
             request: Request,
             instance_id: int,
@@ -358,8 +427,10 @@ class BaseRouterInitializer(BaseInitializer):
 
     def get_delete_router(self) -> None:
         """Get create router."""
+        docstring = self.create_router_docstring('delete', has_return=False)
 
         @self.router.delete(**self._kwargs_generator.get_delete_router_kwargs())
+        @change_docstring(docstring)
         async def delete_instance(  # noqa: WPS430
             request: Request,
             instance_id: int,
@@ -379,8 +450,14 @@ class BaseRouterInitializer(BaseInitializer):
 
     def get_list_router(self) -> None:
         """Get list router."""
+        docstring = self.create_router_docstring(
+            'read',
+            has_path=False,
+            ending='s list',
+        )
 
         @self.router.get(**self._kwargs_generator.get_list_router_kwargs())
+        @change_docstring(docstring)
         async def read_instance_list(  # noqa: WPS430
             request: Request,
             user: Annotated[User, Depends(get_current_admin_user)],
