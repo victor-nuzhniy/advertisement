@@ -1,6 +1,7 @@
 """Common project utilities."""
 
 from datetime import datetime
+from typing import Callable
 
 from fastapi import HTTPException, status
 from jose import jwt
@@ -43,6 +44,17 @@ class AwareDateTime(TypeDecorator):
     def process_result_value(self, dt_value: Any, dialect: Dialect) -> Any:
         """Process result value."""
         return dt_value.replace(tzinfo=utc)
+
+
+def change_docstring(doc: str) -> Callable:
+    """Change decorated function docstring."""
+
+    def decorated_func(func: Callable) -> Callable:  # noqa
+        """Change decorated function docstring."""
+        func.__doc__ = doc
+        return func
+
+    return decorated_func
 
 
 def get_token_data(token: str) -> TokenPayload:
