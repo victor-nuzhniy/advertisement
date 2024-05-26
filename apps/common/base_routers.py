@@ -46,7 +46,7 @@ class BaseRouterKwargs:
     ) -> None:
         """Initialize BaseRouter instance."""
         self.name = name
-        self.tags = ['{name}s application'.format(name=name.capitalize())]
+        self.tags = ['Admin {name}s application'.format(name=name)]
         self.instance_path = ''.join(
             ('/admin/{name}/'.format(name=name), '{instance_id}/'),
         )

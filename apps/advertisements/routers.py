@@ -44,7 +44,7 @@ admin_adv_router_initializer.initialize_routers()
         200: {'description': 'Successfully get advertisement list by period'},
         422: {'model': JSENDFailOutSchema, 'description': 'ValidationError'},
     },
-    tags=['Advertisement application'],
+    tags=['Advertisements application'],
 )
 async def get_advertisement_by_period(
     request: Request,
@@ -75,7 +75,7 @@ async def get_advertisement_by_period(
         200: {'description': 'Successfully get advertisement stat info'},
         422: {'model': JSENDFailOutSchema, 'description': 'ValidationError'},
     },
-    tags=['Advertisement application'],
+    tags=['Advertisements application'],
 )
 async def get_advertisement_stat(
     request: Request,
@@ -107,7 +107,7 @@ async def get_advertisement_stat(
         200: {'description': 'Successfully created many advertisement.'},
         422: {'model': JSENDFailOutSchema, 'description': 'ValidationError'},
     },
-    tags=['Advertisements application'],
+    tags=['Admin advertisements application'],
 )
 async def bulk_create_adv(
     request: Request,
@@ -132,7 +132,7 @@ async def bulk_create_adv(
         200: {'description': 'Successfully created many advertisement.'},
         422: {'model': JSENDFailOutSchema, 'description': 'ValidationError'},
     },
-    tags=['Advertisement application'],
+    tags=['Advertisements application'],
 )
 async def get_adv_by_url(
     request: Request,
