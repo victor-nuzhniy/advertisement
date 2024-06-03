@@ -5,10 +5,12 @@ from typing import Callable
 
 from fastapi import HTTPException, status
 from jose import jwt
+from pydantic import ValidationError
 from pytz import utc
 from sqlalchemy import DATETIME, Dialect, TypeDecorator
 from typing_extensions import Any, Sequence, Type
 
+from apps.authorization.auth_utilities import create_access_token
 from apps.authorization.schemas import TokenPayload
 from apps.common.exceptions import BackendError
 from settings import Settings
@@ -73,6 +75,19 @@ def get_token_data(token: str, access: bool = True) -> TokenPayload:
             headers={'WWW-Authenticate': 'Bearer'},
         )
     return token_data
+
+
+def refresh_access_token(refresh_token: str) -> str:
+    """Refresh access token."""
+    try:
+        token_data = get_token_data(refresh_token, access=False)
+    except (jwt.JWTError, ValidationError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Credential verification failed',
+            headers={'WWW-Authenticate': 'Bearer'},
+        )
+    return create_access_token(token_data.sub)
 
 
 class Checkers:
