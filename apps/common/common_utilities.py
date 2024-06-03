@@ -57,11 +57,12 @@ def change_docstring(doc: str) -> Callable:
     return decorated_func
 
 
-def get_token_data(token: str) -> TokenPayload:
+def get_token_data(token: str, access: bool = True) -> TokenPayload:
     """Get token data, using token."""
+    key = Settings.JWT_SECRET_KEY if access else Settings.JWT_REFRESH_SECRET_KEY
     payload = jwt.decode(
         token,
-        Settings.JWT_SECRET_KEY,
+        key,
         algorithms=[Settings.JWT_ALGORITHM],
     )
     token_data = TokenPayload(**payload)
