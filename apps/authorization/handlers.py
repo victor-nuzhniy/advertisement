@@ -15,6 +15,7 @@ from apps.authorization.auth_utilities import (
     verify_user,
 )
 from apps.authorization.schemas import AuthOut
+from apps.common.common_utilities import refresh_access_token
 from apps.common.orm_services import statement_executor
 from apps.user.statements import user_crud_statements
 
@@ -48,6 +49,15 @@ class AuthorizationHandlers:
             refresh_token=create_refresh_token(user.email),
             id=user.id,
         )
+
+    def refresh(
+        self,
+        *,
+        request: Request,
+        refresh_token: str,
+    ) -> str:
+        """Refresh access token."""
+        return refresh_access_token(refresh_token)
 
 
 authorization_handlers = AuthorizationHandlers()
