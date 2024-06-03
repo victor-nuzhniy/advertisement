@@ -41,10 +41,15 @@ class UserIn(TokenPayload):
     id: Annotated[int, Field(description='User id', examples=[1])]
 
 
-class AuthOut(BaseOutSchema):
-    """Authorization out schema."""
+class RefreshOut(BaseOutSchema):
+    """Refresh token out schema."""
 
     access_token: Annotated[str, Field(description='User access token')]
+
+
+class AuthOut(RefreshOut):
+    """Authorization out schema."""
+
     refresh_token: Annotated[str, Field(description='User refresh token')]
     id: Annotated[int, Field(description='User id')]
 
