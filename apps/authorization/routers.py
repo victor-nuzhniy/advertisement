@@ -1,6 +1,6 @@
 """Authorization apps routers."""
 
-from fastapi import APIRouter, Depends, Header, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing_extensions import Annotated
@@ -8,6 +8,7 @@ from typing_extensions import Annotated
 from apps.authorization.handlers import authorization_handlers
 from apps.authorization.schemas import AuthOut, RefreshOut
 from apps.common.dependencies import get_async_session
+from apps.common.user_dependencies import reusable_oauth
 
 authorization_router = APIRouter()
 
@@ -54,7 +55,7 @@ async def login(
 )
 def refresh(
     request: Request,
-    refresh_token: Annotated[str, Header()],
+    refresh_token: Annotated[str, Depends(reusable_oauth)],
 ) -> RefreshOut:
     """
     **Refresh access token**.
